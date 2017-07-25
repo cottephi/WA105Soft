@@ -1,0 +1,46 @@
+------------------------------------------------
+   How to run the code for purity measurement
+------------------------------------------------
+
+You can find the following directories:
+
+inc
+src
+work
+
+the Makefile (and this README).
+
+1) run make to get purity.exe (if needed)
+
+> make
+
+2) enter in work directory
+ 
+>  cd work
+>  ls -rtl
+  
+   purity.sh --> script to be used
+   purity.exe -> ../purity.exe  --> link to executable
+   input  --> directory for scripts and macros needed by purity.sh , you do not need to modify it
+  
+   
+3) now you need to link a root file of recostructed data, reco.root
+
+4) to run the code:
+   source purity.sh reco.root
+   
+    
+   this create a directory: purity_reco_ddmmyy_hhmmss
+   
+   in purity_reco_ddmmyy_hhmmss there are two relevant files:
+   
+   --> fitresult_ddmmyy_hhmmss.listing: ascii file with purity values for view 0 and view1 obtained from fit
+   
+   --> purity_ddmmyy_hhmmss.listing:: general information about input file (reco.root)
+   
+    A pdf file,  purity_ddmmyy_hhmmss.pdf is also available
+    
+    
+Please note that the scripts ends in a root session
+
+

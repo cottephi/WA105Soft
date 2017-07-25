@@ -1,0 +1,16 @@
+DETECTOR WA105_6x6x6
+RAWDATATYPE USHORT  1  # FLOAT or USHORT, quantize 0 - no, 1 - yes
+ELECMODEL ETHZ 5 0.0 12 2.5  # ped and ped RMS (ADC), max bits, sampling frequency 
+MHz
+SAVEVOXELINFO 1
+#!!!NOTE!!!: RAWDATATYPE and ELECMODEL must be defined before CRMs
+
+# description of CRMs:id x y z wx wy gain pitchx pitchy nchx nchy nsample
+CRM 0 -150.0 -150.0 300.0 300.0 300.0 10.0 0.3125 0.3125 960 960 10000
+CRM 1  150.0 -150.0 300.0 300.0 300.0 10.0 0.3125 0.3125 960 960 10000
+CRM 2 -150.0  150.0 300.0 300.0 300.0 10.0 0.3125 0.3125 960 960 10000
+CRM 3  150.0  150.0 300.0 300.0 300.0 10.0 0.3125 0.3125 960 960 10000
+
+# noise modules: NAME Freq(MHz) RMS(unit depends) coherent (0 - no, 1 - yes) 
+# NOISE CAPA 0 0.094 0
+

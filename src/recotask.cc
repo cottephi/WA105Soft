@@ -1,0 +1,216 @@
+///////////////////////////////////////////////////////////////////////
+//
+//  A set of reconstruction tasks for WA105 online monitoring
+//  Relies on EventDataManager to
+//     - loop over events
+//     - add branches
+//     - clone event trees
+//
+//
+//  Created: VG, Fri Apr 29 14:36:26 CEST 2016
+//  Modified:
+//
+///////////////////////////////////////////////////////////////////////
+
+#include <iostream>
+#include <vector>
+#include <string>
+#include <cstdio>
+#include <ctime>
+#include <algorithm>
+
+#include "EventDataManager.h"
+#include "RecoConfigFile.h"
+
+// reconstruction modules
+#include "HitRecoTask.h"
+#include "CRTrackRecoTask.h"
+
+
+// unix path separator
+//bool path_sep(char c)
+//{
+//return c == '/';
+//}
+
+//
+std::string get_basename( std::string const& pathname)
+{
+  size_t last_slash = pathname.find_last_of("/");
+
+  if(last_slash != std::string::npos)
+  {
+    return pathname.substr( last_slash+1 );
+  }
+
+  return pathname;
+}
+
+void get_help()
+{
+  cout<<"Usage: "<<endl;
+  cout<<" -c <config file> - reconstruction configuration file (mandatory)"<<endl;
+  cout<<" -i <input file>  - input file (mandatory)"<<endl;
+  cout<<" -o <output file> - output file (defaults to recotask_<input_file>)"<<endl;
+  cout<<" -h               - print this message"<<endl;
+  exit(-1);
+}
+
+///////////////////////////////////////////////////////////////////////
+//
+// main
+//
+///////////////////////////////////////////////////////////////////////
+int main(int argc, char **argv)
+{
+  string finname     = "";
+  string fconfigname = "";
+  string foutname    = "";
+
+  if(argc == 1)
+  get_help();
+
+
+  char cc;
+  while((cc = getopt(argc, argv, "c:i:o:")) != -1)
+  {
+    switch(cc)
+    {
+
+      case 'i':
+      finname = optarg;
+      break;
+
+      case 'o':
+      foutname = optarg;
+      break;
+
+      case 'c':
+      fconfigname = optarg;
+      break;
+
+      default:
+      get_help();
+      //cerr<<"ERROR: unrecognized option : "<<cc<<endl;
+      //break;
+    }
+  }
+
+
+  if(finname.empty())
+  {
+    cerr<<"ERROR: no input file provided"<<endl;
+    get_help();
+  }
+
+  if(fconfigname.empty())
+  {
+    cerr<<"ERROR: no reco configuration file provided"<<endl;
+    get_help();
+  }
+
+  if(foutname.empty())
+  {
+    std::string bsname = get_basename(finname);
+    foutname = "recotask_" + bsname;
+    size_t found = foutname.find_last_of(".");
+    if( found == std::string::npos )
+    {
+      foutname += ".root";
+    }
+    else if( foutname.substr( found + 1 ) != "root" )
+    {
+      // change extension
+      foutname.replace( found + 1, 4 , "root");
+    }
+  }
+
+  if(foutname == finname)
+  {
+    cerr<<"ERROR: cannot have the same name as input / output file"<<endl;
+    get_help();
+  }
+
+  // read config file
+  RecoConfigFile recconfrd;
+  std::vector<RecoConfig> recconf;
+  recconfrd.Read( fconfigname, recconf );
+
+  EventDataManager *evmgr = new EventDataManager();
+
+  evmgr->Open( finname, foutname );
+
+  Long64_t startev, totalev;
+  if( recconfrd.EventsSelected( startev, totalev ) )
+  {
+    evmgr->ProcessSubSample( startev, totalev );
+  }
+
+
+  RunConfig runconf;
+  evmgr->GetRunConfig( runconf );
+
+  //
+  std::vector<RecoTask*> rectasks;
+
+  //
+  HitRecoTask *hitreco = new HitRecoTask();
+
+  //
+  CRTrackRecoTask *crreco = new CRTrackRecoTask();
+
+  //
+  UInt_t gTime   = time(0);
+  for(size_t i=0;i<recconf.size();i++)
+  {
+    recconf[i].SetInFileName( finname );
+    recconf[i].SetRunTime( gTime );
+    std::string modname = recconf[i].GetTaskName();
+    if( modname.compare("HIT") == 0 )
+    {
+      std::cout<<"Hit reconstruction is enabled "<<std::endl;
+      hitreco->Configure( runconf, recconf[i] );
+
+      evmgr->RegisterDataProduct( hitreco->GetDataProducts() );
+      evmgr->AddNewConfigBranch( recconf[i] );
+      rectasks.push_back( hitreco );
+    }
+    else if( modname.compare("CRTRACK") == 0 )
+    {
+      std::cout<<"CR track reconstruction is enabled "<<std::endl;
+      crreco->Configure( runconf, recconf[i] );
+
+      evmgr->RegisterDataProduct( crreco->GetDataProducts() );
+      evmgr->AddNewConfigBranch( recconf[i] );
+      rectasks.push_back( crreco );
+    }
+
+
+    //recconf[i].Print();
+  }// loop over reco config: 1 or 2 items in the loop, hit and CRT
+
+  // loop over all events
+  Event *event;
+  int count = 0;
+  while( (event = evmgr->NextEvent()) )
+  {
+    Long64_t curindx = evmgr->GetCurrentIndex()-1;
+    std::cout<<std::endl;
+    std::cout<<"---> Processing event  "<<curindx<<std::endl;
+    for(size_t i=0;i<rectasks.size();i++)
+    rectasks[i]->ProcessEvent(*event);
+    count++;
+    //cout<<"Processed "<<count++<<" events"<<endl;
+  }
+
+  evmgr->PrintRunConfig();
+
+  // fill write everything
+  evmgr->Close();
+  cout<<"Total number of processed events: "<<count<<endl;
+  delete evmgr;
+  delete hitreco;
+  delete crreco;
+
+  return 0;
+}

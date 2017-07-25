@@ -1,0 +1,109 @@
+#*****QSCAN EXAMPLE DATACARD***************************
+#********************************************************
+#***RUN CONTROL******************************************
+MAXEVENTS 1
+VERBOSE_LEVEL 4
+
+#***DETECTORS CONFIGURATION INPUT FILE *****************
+
+DLArCONFIG WA105_6x6x6.config
+#DLArCONFIG WA105_1x1x3.config
+
+
+#***INPUT FILE SELECTION******one of these 4 lines has to be uncommented************
+ 
+IFILE pdg:mu-                          #gun mode 
+#IFILE NDgst:input_gst.root            #nucleon decay events generated with GENIE  
+#IFILE gst:test_nugen.gst.root         #neutrino events generated with GENIE  
+#IFILE WA105_MCEVENT                   #events with cosmic background.
+
+#***in case WA105_MCEVENT is selected:  
+#WA105MC_BEAM e-   #specify  beam particle, if commented only background is generated        
+#WA105MC_CRY $DATASET/Cosmics/Data/cry_sample.666.v0.root  #CRY cosmics file, put a comment to disable CR background 
+#WA105MC_CRWIN -4.0 8.0    # start time and total duration (leave 0 if only one CR is desired) in ms 
+##WA105MC_CREVNT 2603      # event number from CRY input file 
+#WA105MC_CRRATE 166        # e.g. PDG rate 166 /m2/s, set to 0 for default CRY rate
+
+ 
+#***OUTPUT***********************************************
+
+OFILE WA105_output.root             
+
+# save TGEO
+SAVE_TGEO 1 
+
+#***MC SIMULATION SETTINGS********************************
+
+#select Geant3 or Geant4
+VMC_TRANSPORTCODE G3
+#VMC_TRANSPORTCODE G4
+
+
+#***E-Field configuration****
+
+EFIELDTYPE UNIFORM 500.0 # V/cm, constant field
+
+#uncomment to use a different field map
+#EFIELDTYPE EMAPFILE $DATASET/EField/Data/map_666_0.5kVcm_BFlow_0.root
+#EFIELDTYPE EMAPFILE $DATASET/EField/Data/map_666_0.5kVcm_analytic.root
+#EMAPFILE_TAGS   E:Ex:Ey:Ez:DriftTime:DriftLen:EndPointDx:EndPointDy:EndPointDz
+#EMAPFILE_HISTOS hEtot:hEx:hEy:hEz:hDriftTime:hDriftLen:hEndPointDX:hEndPointDY:hEndPointDZ 
+
+#************** Light ReadOut and Scintillation Light Map **************************
+# uncomment these lines to enable light simulation 
+
+#LRO_NPMTS 36
+#LRO_SAMPLING_TIME 400 #ns
+#LRO_TIME_WIN 30000 -4.e6 8.e6 #ns
+#
+#### QEFF: same for all PMTs (default = 1)
+#LRO_PMTS_QEFF 0.2 
+#
+#LIGHTMAP_LAR $DATASET/LightMap/LightMap_6x6x6_PMTNonUni_LAr.root
+#LIGHTMAP_LAR_TAGS Time0:MPV:Sigma:Weight
+#LIGHTMAP_LAR_HINDEX 1 36
+#LIGHTMAP_LAR_HISTOS ht0_PMT@:hMPV_PMT@:hsigma_PMT@:hw0_PMT@
+#
+#
+#LIGHTMAP_GAR $DATASET/LightMap/LightMap_6x6x6_PMTNonUni_GAr.root
+#LIGHTMAP_GAR_TAGS Time0:MPV:Sigma:Weight
+#LIGHTMAP_GAR_HINDEX 1 36
+#LIGHTMAP_GAR_HISTOS ht0_PMT@:hMPV_PMT@:hsigma_PMT@:hw0_PMT@
+#******************************************************************
+
+# seeds
+GRANDOM_SEED 4357
+PRIMARY_SEED 123
+
+#*************************** Diffusion in LAr ***********************************
+# diffusion constants in cm2/s
+# set to -1 to use parametrization from Atrazhev <- to be done!!!/ set 0 (or comment) to disable
+DIFFUSIONCONST_DL 4   # longitudinal, e.g., 5.3
+DIFFUSIONCONST_DT 13  # transverse, e.g., 12.8
+
+#LEMEFFICIENCY_MAP $DATASET/LemMap/Eff_map.dat
+
+#set it to -1 to use birk's law (icarus)
+FORCERECOMB -1
+
+#set it to -1 to disable purity losses, see also TRD pag. 45, 
+FORCELIFETIME -1 #(ms)
+
+#primary particle gun: std particle gun settings (valid for both IFILE pdg:mu- and WA105MC_BEAM e- )
+#the  center of active region is at 0, 0, 0
+
+#PRIMARY_THETA_MINMAX  2.571 2.571
+PRIMARY_THETA_MINMAX  2. 2.
+PRIMARY_PHI_MINMAX    0.7854 0.7854
+PRIMARY_PABS_MINMAX   4. 4.
+PRIMARY_VX_MINMAX -305.0 -305.0
+PRIMARY_VY_MINMAX -305.0 -305.0
+PRIMARY_VZ_MINMAX -10.0 10.0
+
+# GENIE
+RESCATTER 1 # nuclear reintercation are considered ( set 0 to ignore them)
+ 
+
+#***TERMINATION*******************************************
+
+END

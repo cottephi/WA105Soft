@@ -1,0 +1,64 @@
+float low_b = 5000;
+float up_b = 5000;
+float fitw = (x0[1]-x0[0])/2;
+ 
+
+gStyle->SetOptFit(11);  
+pad1->cd(1); 
+gStyle->SetOptFit(111);
+for (int i=0; i<n; i++){
+
+if (y0[i]>0 && x0[i]<low_b ) low_b=x0[i];
+if (y0[i]==0 && x0[i]>low_b && x0[i]<up_b) up_b=x0[i];
+
+}
+ 
+ 
+gr0 = new TGraphErrors(n,x0,y0,dx0,dy0); 
+gr0->SetTitle("View 0"); 
+gr0->GetXaxis()->SetTitle("Drift time");
+gr0->SetLineWidth(4);
+gr0->SetMarkerColor(kBlue);
+gr0->SetMarkerStyle(21);
+gr0->SetMinimum(0);
+gr0->SetMaximum(1.1);
+gr0->Draw("AP");
+ 
+TF1 *myfit0= new TF1("myfit0","[0]*exp(-x/[1])");
+myfit0->SetParameter(1,1000);
+gr0->Fit("myfit0","","",(low_b-fitw),(up_b-fitw));
+gr0->GetFunction("myfit0")->SetLineColor(kRed);  
+out<<"view 0:  "<<myfit0->GetParameter(1)<<"  "<<myfit0->GetParError(1)<<endl;
+ 
+ pad1->cd(2); 
+
+low_b = 5000;
+up_b = 5000;
+gStyle->SetOptFit(111);
+for (int i=0; i<n; i++){
+
+if (y1[i]>0 && x1[i]<low_b ) low_b=x1[i];
+if (y1[i]==0 && x1[i]>low_b && x1[i]<up_b) up_b=x1[i];
+
+}
+   
+ 
+gr1 = new TGraphErrors(n,x1,y1,dx1,dy1); 
+gr1->SetTitle("View 1");  
+gr1->GetXaxis()->SetTitle("Drift time");
+gr1->SetLineWidth(4);
+gr1->SetMarkerColor(kGreen);
+gr1->SetMarkerStyle(21);
+gr1->SetMinimum(0);
+gr1->SetMaximum(1.1);
+gr1->Draw("AP");
+ 
+TF1 *myfit1= new TF1("myfit1","[0]*exp(-x/[1])");
+myfit1->SetParameter(1,1000);
+gr1->Fit("myfit1","","",(low_b-fitw),(up_b-fitw));
+gr1->GetFunction("myfit1")->SetLineColor(kRed);  
+out<<"view 1:  "<<myfit1->GetParameter(1)<<"  "<<myfit1->GetParError(1)<<endl;
+out.close(); 
+gStyle->SetOptDate(23);
+c1->Print("purity.pdf","pdf");
+ }

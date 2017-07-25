@@ -1,0 +1,19 @@
+#verbosity
+/mcVerbose/all 0
+/mcVerbose/runAction 2
+/mcVerbose/composedPhysicsList 1
+/mcVerbose/trackManager 1
+#/mcRegions/print false
+/tracking/verbose 0
+/mcDet/printMaterialsProperties
+/mcDet/printMedia
+
+#cuts (use specialCuts == vmc cuts)
+/mcPhysics/rangeCuts 1 nm
+/run/particle/applyCuts true all
+
+#testing
+#/process/eLoss/fluct false
+
+#others
+#/mcTracking/saveSecondariesInStep true

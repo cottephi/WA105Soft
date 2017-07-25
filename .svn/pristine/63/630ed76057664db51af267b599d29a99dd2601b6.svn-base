@@ -1,0 +1,95 @@
+/////////////////////////////////////////////////////////////////////////////////
+//
+// Module to reconstruct 2D track segments mostly geared towards CR 
+// track reconstruction in the dual-phase LAr TPC
+// 
+//
+// Basic idea is to cluster hits using nearest neighbour algorithm 
+// and then examine each cluster for presence of overlapping tracks
+// In the simplest case if no overlapping tracks are detected
+// the hits in the cluster split into main track hits and those beloning to 
+// delta rays and then a 2D track segment is built.
+//
+// For clusters with track overlaps track building is based on several methods
+//
+/////////////////////////////////////////////////////////////////////////////////
+
+#include <iostream>
+
+#include "CosmicRecoVetoRegion.h"
+#include "CRTrackSegRecon.h"
+
+//
+//
+//
+CRTrackSegRecon::CRTrackSegRecon(RecoConfig &recopara)
+{
+  // get our configurations
+  std::vector<float> partrkv = recopara.GetValue("PARA_CRTRKVETO");
+
+  //
+  std::vector<float> parclus = recopara.GetValue("PARA_CLUS");
+  std::vector<float> partrkm = recopara.GetValue("PARA_TRKMTC");
+  std::vector<float> partrkb = recopara.GetValue("PARA_TRKBUILD");
+
+  // define veto region for CR reconstruction
+  if( !partrkv.empty() )
+    RecoUtils::CosmicRecoVetoRegion::Instance().Set( partrkv );
+
+  // clustering algorithm for simple tracking
+  fClusAlgo = new NNCluster((int)parclus[0]);
+
+  // track builder to resolve multiple overlapping clusters
+  fTrkMTC = NULL;
+  if( !partrkm.empty() ) fTrkMTC   = new TrackBuilderMTC(partrkm);
+  
+  // very simple track builder suitable only for single tracks
+  fTrkBuild = NULL;
+  if( !partrkb.empty() ) fTrkBuild = new TrackBuilderSm(partrkb);
+}
+
+
+//
+//
+//
+CRTrackSegRecon::~CRTrackSegRecon()
+{
+  delete fClusAlgo;
+  if(fTrkMTC)   delete fTrkMTC;
+  if(fTrkBuild) delete fTrkBuild;
+}
+
+//
+//
+//
+int CRTrackSegRecon::FindTracks(const HitCollection* hcoll, std::vector<LArReco::Track2d> &tracks)
+{
+  // hit clusters
+  std::vector<HitCollection*> hitsClus;
+  
+  
+  // build hit clusters
+  fClusAlgo->BuildClusters(hcoll, hitsClus);
+  
+  // now loop over cluster and try to build track objects
+  int itracks = 0;
+  while(!hitsClus.empty())
+    {
+      int trkfound = 0;
+      if( fTrkMTC ) // use this by default
+	{
+	  trkfound = fTrkMTC->MakeTrack( hitsClus.back(), NULL, tracks);
+	}
+      else if( fTrkBuild )
+	{
+	  trkfound = 1;
+	  fTrkBuild->MakeTrack( hitsClus.back(), NULL, tracks);
+	}
+      itracks += trkfound;
+
+      delete hitsClus.back();
+      hitsClus.pop_back();
+    }
+  
+  return itracks;
+}

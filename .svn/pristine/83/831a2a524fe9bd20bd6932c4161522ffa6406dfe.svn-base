@@ -1,0 +1,21 @@
+void fit_mop(){
+ofstream out;
+out.open("fit.listing", | ios::app); 
+
+ TCanvas *c1 = new TCanvas("c1","fit",900,900);
+ TPad *pad1 = new TPad("pad1","pad1",0,0.,1,.97); 
+ pad1->Draw();
+gStyle->SetOptFit(111);
+ pad1->Divide(1,2); 
+ const Int_t n = TODRAW;
+Double_t x0[n], x1[n], y0[n], y1[n], dx0[n], dx1[n],dy0[n],  dy1[n];
+for (Int_t i=0; i<n; i++) {
+  x0[i]=0;
+  x1[i]=0;
+  y0[i]=0; 
+  y1[i]=0; 
+  dx0[i]=0.;
+  dx1[i]=0.;
+  dy0[i]=0.;
+  dy1[i]=0.;
+}
