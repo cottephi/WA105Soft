@@ -147,12 +147,11 @@ void EventDecoder::ReadEvent( std::vector<adc16_t> &adc, bool headonly )
    // first read the header
    ReadBytes( m_EveHeadBuf );
    decode_evehead(&m_EveHeadBuf[0], m_evh);
-   //dlardaq::msg_info<<">>> Event number "<<m_evh.ev_num<<endl;
-   //dlardaq::msg_info<<">>> Event size   "<<m_evh.ev_size<<endl;
-   //dlardaq::msg_info<<">>> Trig number  "<<m_evh.trig_info.num<<endl;
-   //dlardaq::msg_info<<">>> Time stamp   "<<m_evh.trig_info.ts.tv_sec<<" s "
-   //<<m_evh.trig_info.ts.tv_nsec<<" ns"<<endl;
-   //dlardaq::msg_info<<">>> Flags "<<bitset<8>(m_evh.dq_flag)<<endl;
+   dlardaq::msg_info<<">>> Event number "<<m_evh.ev_num<<endl;
+   dlardaq::msg_info<<">>> Event size   "<<m_evh.ev_size<<endl;
+   dlardaq::msg_info<<">>> Trig number  "<<m_evh.trig_info.num<<endl;
+   dlardaq::msg_info<<">>> Time stamp   "<<m_evh.trig_info.ts.tv_sec<<" s "<<m_evh.trig_info.ts.tv_nsec<<" ns"<<endl;
+   dlardaq::msg_info<<">>> Flags "<<bitset<8>(m_evh.dq_flag)<<endl;
 
 
    if(headonly) // read only header and skip to next event

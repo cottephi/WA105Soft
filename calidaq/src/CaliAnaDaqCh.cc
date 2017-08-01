@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////////////////////
-// 
+//
 //  Base class for analysis of calibration data from dlardaq
 //
 //
@@ -44,11 +44,12 @@ void caliana::CaliAnaDaqCh::Reset()
 void caliana::CaliAnaDaqCh::GetResults( std::map< std::string, std::pair< double, double > > &res )
 {
   res.clear();
-  
+
   for(size_t i=0;i<m_nres;i++)
     {
       float mean, rms;
-      FindMeanAndRms( m_evres[i], mean, rms );
+      if(i==1){FindMeanAndRms( m_evres[i], mean, rms, true );}
+      else{FindMeanAndRms( m_evres[i], mean, rms, false );}
       res[ m_keys[i] ] = std::make_pair( mean, rms );
     }
 }

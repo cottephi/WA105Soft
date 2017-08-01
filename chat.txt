@@ -1,0 +1,4 @@
+Usage: 
+ -i <input file>  - input file (mandatory)
+ -o <output file> - output file (defaults to recotask_<input_file>)
+ -h               - print this message
